@@ -1,0 +1,62 @@
+version: "3.8"
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql
+    restart: unless-stopped
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Hardi2013@
+      MYSQL_DATABASE: students
+    ports:
+      - 3307:3306
+  first:
+    container_name: firstserv
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
+    build: 
+      context: ./FirstMicroservice
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=Hardi2013@
+    stdin_open: true
+    tty: true
+  second:
+    container_name: secondserv
+    expose:
+      - "8081"
+    depends_on:
+      - mysqldb
+      - first
+    build: 
+      context: ./SecondMicroservice
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=Hardi2013@
+    stdin_open: true
+    tty: true
+  third:
+    container_name: thirdserv
+    depends_on:
+      - mysqldb
+      - second
+    build: 
+      context: ./ThirdMicroservice
+      dockerfile: Dockerfile
+    expose:
+      - "8082"
+    restart: on-failure
+    environment:   
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=Hardi2013@
+    stdin_open: true
+    tty: true
+volumes:
+  db:
